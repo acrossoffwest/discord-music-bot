@@ -12,25 +12,24 @@ import (
 // HelpReporter
 func HelpReporter(m *discordgo.MessageCreate) {
 	log.Println("INFO:", m.Author.Username, "send 'help'")
-	help := "```go\n`Сайн Байна! Дуулашан ботай захиралтанууд`\n```\n" +
-		"**`" + o.DiscordPrefix + "help`** or **`" + o.DiscordPrefix + "h`**  ->  Захиралтануудые харуулха.\n" +
-		"**`" + o.DiscordPrefix + "join`** or **`" + o.DiscordPrefix + "j`**  ->  Бот дугарха каналда орохо.\n" +
-		"**`" + o.DiscordPrefix + "leave`** or **`" + o.DiscordPrefix + "l`**  ->  Бот дугарха каналhаа гараха.\n" +
-		"**`" + o.DiscordPrefix + "play`**  ->  Дуу надаха тигэд одно дуу ээлжэндэ нэмэхэ.\n" +
-		"**`" + o.DiscordPrefix + "playlist`**  ->  Плэйлист надаха.\n" +
-		"**`" + o.DiscordPrefix + "radio`**  ->  URL radio наадаха.\n" +
-		"**`" + o.DiscordPrefix + "stop`**  ->  Дуу байгаад ээлжэнеээ унтаргаха.\n" +
-		"**`" + o.DiscordPrefix + "skip`**  ->  Дуулажа байhан дууяа хаяд саашинь ээлжэн ябуулаха.\n" +
-		"**`" + o.DiscordPrefix + "pause`**  ->  Дуу байлагаха.\n" +
-		"**`" + o.DiscordPrefix + "resume`**  ->  Байлгаhан дууяа сашин ябуулаха.\n" +
-		"**`" + o.DiscordPrefix + "time`**  ->  Дуунай саг улоошин харуулаха.\n" +
-		"**`" + o.DiscordPrefix + "queue list`**  ->  Дуунудай ээлжэн харуулаха.\n" +
-		"**`" + o.DiscordPrefix + "queue remove `**  ->  Дуунай ээлжэнэнь тоогор: ***number*** хаягдаха, ***@User*** ба ***last*** song, i.e. ***" + o.DiscordPrefix + "queue remove 2***\n" +
-		"**`" + o.DiscordPrefix + "queue clean`**  ->  Ээлжэн дуhааха.\n" +
-		"**`" + o.DiscordPrefix + "youtube`**  ->  юутубсоо бэдэрхэ.\n\n" +
+	help := "```go\n`Standard Commands List`\n```\n" +
+		"**`" + o.DiscordPrefix + "help`** or **`" + o.DiscordPrefix + "h`**  ->  show help commands.\n" +
+		"**`" + o.DiscordPrefix + "join`** or **`" + o.DiscordPrefix + "j`**  ->  the bot join in to voice channel.\n" +
+		"**`" + o.DiscordPrefix + "leave`** or **`" + o.DiscordPrefix + "l`**  ->  the bot leave the voice channel.\n" +
+		"**`" + o.DiscordPrefix + "play`**  ->  play and add a one song in the queue.\n" +
+		"**`" + o.DiscordPrefix + "radio`**  ->  play a URL radio.\n" +
+		"**`" + o.DiscordPrefix + "stop`**  ->  stop the player and remove the queue.\n" +
+		"**`" + o.DiscordPrefix + "skip`**  ->  skip the actual song and play the next song of the queue.\n" +
+		"**`" + o.DiscordPrefix + "pause`**  ->  pause the player.\n" +
+		"**`" + o.DiscordPrefix + "resume`**  ->  resume the player.\n" +
+		"**`" + o.DiscordPrefix + "time`**  ->  show the time remaining of song.\n" +
+		"**`" + o.DiscordPrefix + "queue list`**  ->  show the list of song in the queue.\n" +
+		"**`" + o.DiscordPrefix + "queue remove `**  ->  remove a song of queue indexed for a ***number***, an ***@User*** or the ***last*** song, i.e. ***" + o.DiscordPrefix + "queue remove 2***\n" +
+		"**`" + o.DiscordPrefix + "queue clean`**  ->  clean all queue.\n" +
+		"**`" + o.DiscordPrefix + "youtube`**  ->  search from youtube.\n\n" +
 		"```go\n`Owner Commands List`\n```\n" +
-		"**`" + o.DiscordPrefix + "ignore`**  ->  ханалэй захиралтануудые тоон угый байха.\n" +
-		"**`" + o.DiscordPrefix + "unignore`**  ->  ханалэй захиралтануудые тоожэ эхилхэ.\n"
+		"**`" + o.DiscordPrefix + "ignore`**  ->  ignore commands of a channel.\n" +
+		"**`" + o.DiscordPrefix + "unignore`**  ->  unignore commands of a channel.\n"
 
 	ChMessageSend(m.ChannelID, help)
 	//ChMessageSendEmbed(m.ChannelID, "Help", help)
@@ -41,22 +40,14 @@ func JoinReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *discordgo.Ses
 	log.Println("INFO:", m.Author.Username, "send 'join'")
 	voiceChannelID := SearchVoiceChannel(m.Author.ID)
 	if voiceChannelID == "" {
-		log.Println("ERROR: Дургарха ханалэй ID ологдобо угый.")
-		ChMessageSend(m.ChannelID, "[**Music**] <@"+m.Author.ID+"> Та дугарха ханалдо ороод байха оhотойд!")
+		log.Println("ERROR: Voice channel id not found.")
+		ChMessageSend(m.ChannelID, "[**Music**] <@"+m.Author.ID+"> You need to join a voice channel!")
 		return
 	}
 	if v != nil {
-		log.Println("INFO: Дугарха Инстанс урид хээтэй байна.")
+		log.Println("INFO: Voice Instance already created.")
 	} else {
-		guildID := SearchGuild(m.ChannelID)
-		// create new voice instance
-		mutex.Lock()
-		v = new(VoiceInstance)
-		voiceInstances[guildID] = v
-		v.guildID = guildID
-		v.session = s
-		mutex.Unlock()
-		//v.InitVoice()
+		v = CreateVoiceInstance(m, s)
 	}
 	var err error
 	v.voice, err = dg.ChannelVoiceJoin(v.guildID, voiceChannelID, false, false)
@@ -68,6 +59,19 @@ func JoinReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *discordgo.Ses
 	v.voice.Speaking(false)
 	log.Println("INFO: New Voice Instance created")
 	ChMessageSend(m.ChannelID, "[**Music**] I've joined a voice channel!")
+}
+
+func CreateVoiceInstance(m *discordgo.MessageCreate, s *discordgo.Session) *VoiceInstance {
+	guildID := SearchGuild(m.ChannelID)
+	// create new voice instance
+	mutex.Lock()
+	v := new(VoiceInstance)
+	voiceInstances[guildID] = v
+	v.guildID = guildID
+	v.session = s
+	mutex.Unlock()
+	//v.InitVoice()
+	return v
 }
 
 // LeaveReporter
@@ -89,12 +93,11 @@ func LeaveReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 }
 
 // PlayReporter
-func PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
+func PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *discordgo.Session) {
 	log.Println("INFO:", m.Author.Username, "send 'play'")
 	if v == nil {
-		log.Println("INFO: The bot is not joined in a voice channel")
-		ChMessageSend(m.ChannelID, "[**Music**] I need join in a voice channel!")
-		return
+		v = CreateVoiceInstance(m, s)
+		JoinReporter(v, m, s)
 	}
 	if len(strings.Fields(m.Content)) < 2 {
 		ChMessageSend(m.ChannelID, "[**Music**] You need specify a name or URL.")
@@ -123,12 +126,11 @@ func PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	}()
 }
 
-func PlayPlaylistReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
+func PlayPlaylistReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *discordgo.Session) {
 	log.Println("INFO:", m.Author.Username, "send 'playlist'")
 	if v == nil {
-		log.Println("INFO: The bot is not joined in a voice channel")
-		ChMessageSend(m.ChannelID, "[**Music**] I need join in a voice channel!")
-		return
+		v = CreateVoiceInstance(m, s)
+		JoinReporter(v, m, s)
 	}
 	if len(strings.Fields(m.Content)) < 2 {
 		ChMessageSend(m.ChannelID, "[**Music**] You need specify a name or URL.")
@@ -149,21 +151,24 @@ func PlayPlaylistReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 		ChMessageSend(m.ChannelID, "[**Music**] I can't found playlist! ")
 		return
 	}
-
+	message := ""
 	for _, video := range videos {
 		song, err := YoutubeFind(video.Title, v, m)
-		if err != nil || song.data.ID == "" {
+		if err != nil {
+			continue
+		} else if song.data.ID == "" {
 			log.Println("ERROR: Youtube search: ", err)
-			ChMessageSend(m.ChannelID, "[**Music**] I can't found song: "+video.Title)
-			return
+			message += "\n**" + video.Title + "** - song not found"
+			continue
 		}
 		//***`"+ song.data.User +"`***
-		ChMessageSend(m.ChannelID, "[**Music**] **`"+song.data.User+"`** has added , **`"+
-			song.data.Title+"`** to the queue. **`("+song.data.Duration+")` `["+strconv.Itoa(len(v.queue))+"]`**")
+		message += "\n** " + strconv.Itoa(len(v.queue)) + ")" + video.Title + "(" + song.data.Duration + ")** - song added"
 		go func() {
 			songSignal <- song
 		}()
+		time.Sleep(3 * time.Second)
 	}
+	ChMessageSend(m.ChannelID, "[**Music**] **` New songs added to queue: `"+message)
 }
 
 // ReadioReporter
