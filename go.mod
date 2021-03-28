@@ -1,4 +1,4 @@
-module MusicBot
+module discord-music-bot
 
 go 1.16
 
