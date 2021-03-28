@@ -7,7 +7,7 @@ import (
 
 // CreateDB create a database file if it if was not exist
 func CreateDB() error {
-	db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open("discord-music-bot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func CreateDB() error {
 
 // PutDB ignore o unignore a test channel
 func PutDB(channelID, ignored string) error {
-	db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open("discord-music-bot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func PutDB(channelID, ignored string) error {
 // GetDB read if a text channel is ignored
 func GetDB(channelID string) string {
 	var v []byte
-	db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{ReadOnly: true})
+	db, err := bolt.Open("discord-music-bot.db", 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		return ""
 	}

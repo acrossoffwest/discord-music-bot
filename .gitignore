@@ -38,8 +38,8 @@
 
 bin/*
 ignore/*
-musicbot
-MusicBot.db
-MusicBot.db.*
+discord-music-bot
+discord-music-bot.db
+discord-music-bot.db.*
 bot.toml
 .idea

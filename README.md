@@ -1,8 +1,8 @@
-# Discord MusicBot on Golang
+# Discord discord-music-bot on Golang
 
 Based on [ljgago/MusicBot](https://github.com/ljgago/MusicBot)
 
-**MusicBot** is a multiserver music bot for Discord built in Go. **MusicBot** plays youtube audio and radio stream url.
+**discord-music-bot** is a multiserver music bot for Discord built in Go. **discord-music-bot** plays youtube audio and radio stream url.
 
 ### Features:
 - Plays YouTube audio with query parameters or the url link.
@@ -21,16 +21,16 @@ Based on [ljgago/MusicBot](https://github.com/ljgago/MusicBot)
 You need to have installed in your system **go>1.7** and **ffmpeg>3.0**
 
 ```bash
-# Install MusicBot
-go get -u github.com/acrossoffwest/MusicBot
+# Install discord-music-bot
+go get -u github.com/acrossoffwest/discord-music-bot
 ```
 
 ### Use
 
-**MusicBot** use a simple TOML config file.
+**discord-music-bot** use a simple TOML config file.
 
 ```bash
-MusicBot -f bot.toml
+discord-music-bot -f bot.toml
 ```
 
 ### Docker
@@ -39,8 +39,8 @@ Edit and rename **_bot.toml.sample_** to **_bot.toml_**
 
 ```bash
 # Run docker
-docker build -t musicbot-img .
-docker run -d --name musicbot --restart always -v $PWD/bot.toml:/bot/bot.toml -it musicbot-img
+docker build -t discord-music-bot-img .
+docker run -d --name discord-music-bot --restart always -v $PWD/bot.toml:/bot/bot.toml -it discord-music-bot-img
 ```
 
 If you have docker-compose:
