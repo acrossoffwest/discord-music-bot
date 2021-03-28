@@ -243,6 +243,8 @@ func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		LeaveReporter(v, m)
 	case "дуула", "наада", "н", "д", "play":
 		PlayReporter(v, m)
+	case "playlist":
+		PlayPlaylistReporter(v, m)
 	case "radio":
 		RadioReporter(v, m)
 	case "stop":

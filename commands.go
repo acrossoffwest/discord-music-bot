@@ -17,6 +17,7 @@ func HelpReporter(m *discordgo.MessageCreate) {
 		"**`" + o.DiscordPrefix + "join`** or **`" + o.DiscordPrefix + "j`**  ->  Бот дугарха каналда орохо.\n" +
 		"**`" + o.DiscordPrefix + "leave`** or **`" + o.DiscordPrefix + "l`**  ->  Бот дугарха каналhаа гараха.\n" +
 		"**`" + o.DiscordPrefix + "play`**  ->  Дуу надаха тигэд одно дуу ээлжэндэ нэмэхэ.\n" +
+		"**`" + o.DiscordPrefix + "playlist`**  ->  Плэйлист надаха.\n" +
 		"**`" + o.DiscordPrefix + "radio`**  ->  URL radio наадаха.\n" +
 		"**`" + o.DiscordPrefix + "stop`**  ->  Дуу байгаад ээлжэнеээ унтаргаха.\n" +
 		"**`" + o.DiscordPrefix + "skip`**  ->  Дуулажа байhан дууяа хаяд саашинь ээлжэн ябуулаха.\n" +
@@ -120,6 +121,49 @@ func PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	go func() {
 		songSignal <- song
 	}()
+}
+
+func PlayPlaylistReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
+	log.Println("INFO:", m.Author.Username, "send 'playlist'")
+	if v == nil {
+		log.Println("INFO: The bot is not joined in a voice channel")
+		ChMessageSend(m.ChannelID, "[**Music**] I need join in a voice channel!")
+		return
+	}
+	if len(strings.Fields(m.Content)) < 2 {
+		ChMessageSend(m.ChannelID, "[**Music**] You need specify a name or URL.")
+		return
+	}
+	// if the user is not a voice channel not accept the command
+	voiceChannelID := SearchVoiceChannel(m.Author.ID)
+	if v.voice.ChannelID != voiceChannelID {
+		ChMessageSend(m.ChannelID, "[**Music**] <@"+m.Author.ID+"> You need to join in my voice channel for send play!")
+		return
+	}
+	// send play my_song_youtube
+	command := strings.SplitAfter(m.Content, strings.Fields(m.Content)[0])
+	query := strings.TrimSpace(command[1])
+	videos := LoadPlaylist(query)
+
+	if len(videos) == 0 {
+		ChMessageSend(m.ChannelID, "[**Music**] I can't found playlist! ")
+		return
+	}
+
+	for _, video := range videos {
+		song, err := YoutubeFind(video.Title, v, m)
+		if err != nil || song.data.ID == "" {
+			log.Println("ERROR: Youtube search: ", err)
+			ChMessageSend(m.ChannelID, "[**Music**] I can't found song: "+video.Title)
+			return
+		}
+		//***`"+ song.data.User +"`***
+		ChMessageSend(m.ChannelID, "[**Music**] **`"+song.data.User+"`** has added , **`"+
+			song.data.Title+"`** to the queue. **`("+song.data.Duration+")` `["+strconv.Itoa(len(v.queue))+"]`**")
+		go func() {
+			songSignal <- song
+		}()
+	}
 }
 
 // ReadioReporter

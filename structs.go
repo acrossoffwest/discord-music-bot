@@ -73,3 +73,13 @@ type VoiceInstance struct {
 	skip       bool
 	radioFlag  bool
 }
+
+type YoutubeVideosListPageWrapper struct {
+	Videos        []YoutubeVideoInfo
+	NextPageToken string
+}
+
+type YoutubeVideoInfo struct {
+	Title string
+	Id    string
+}
