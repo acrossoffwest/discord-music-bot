@@ -1,4 +1,6 @@
-# MusicBot
+# Discord MusicBot on Golang
+
+Based on [ljgago/MusicBot](https://github.com/ljgago/MusicBot)
 
 **MusicBot** is a multiserver music bot for Discord built in Go. **MusicBot** plays youtube audio and radio stream url.
 
@@ -20,7 +22,7 @@ You need to have installed in your system **go>1.7** and **ffmpeg>3.0**
 
 ```bash
 # Install MusicBot
-go get -u github.com/ljgago/MusicBot
+go get -u github.com/acrossoffwest/MusicBot
 ```
 
 ### Use

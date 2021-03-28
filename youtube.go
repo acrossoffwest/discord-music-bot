@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/google/google-api-go-client/googleapi/transport"
-	"github.com/rylio/ytdl"
+	ytdl2 "github.com/kkdai/youtube/v2"
+	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -64,12 +64,8 @@ func getDuration(stringRawFull, stringRawOffset string) (stringRemain string) {
 }
 
 func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCreate) (song_struct PkgSong, err error) { //(url, title, time string, err error)
-
-	client := &http.Client{
-		Transport: &transport.APIKey{Key: o.YoutubeToken},
-	}
-
-	service, err := youtube.New(client)
+	ctx := context.Background()
+	service, err := youtube.NewService(ctx, option.WithAPIKey(o.YoutubeToken))
 	if err != nil {
 		//log.Fatalf("Error creating new YouTube client: %v", err)
 		return
@@ -95,7 +91,8 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		}
 	}
 
-	call := service.Search.List("id,snippet").Q(searchString).MaxResults(1)
+	arr := []string{"id", "snippet"}
+	call := service.Search.List(arr).Q(searchString).MaxResults(1)
 	response, err := call.Do()
 	if err != nil {
 		//log.Fatalf("Error making search API call: %v", err)
@@ -111,37 +108,29 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		audioTitle = item.Snippet.Title
 	}
 	if audioId == "" {
-		ChMessageSend(m.ChannelID, "Sorry, I can't found this song.")
+		ChMessageSend(m.ChannelID, "Дуун олдобо угый.")
 		return
 	}
 
-	vid, err := ytdl.GetVideoInfo("https://www.youtube.com/watch?v=" + audioId)
+	client := ytdl2.Client{}
+	vid, err := client.GetVideo("https://www.youtube.com/watch?v=" + audioId)
 	if err != nil {
-		//ChMessageSend(textChannelID, "Sorry, nothing found for query: "+strings.Trim(searchString, " "))
+		// log.Fatalf("Error making search API call: %v", err)
 		return
 	}
-	format := vid.Formats.Extremes(ytdl.FormatAudioBitrateKey, true)[0]
-	videoURL, err := vid.GetDownloadURL(format)
-	//log.Println(err)
 
-	videos := service.Videos.List("contentDetails").Id(vid.ID)
+	videoURLString, err := client.GetStreamURL(vid, vid.Formats.FindByItag(18))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	list := []string{"contentDetails"}
+	videos := service.Videos.List(list).Id(vid.ID)
 	resp, err := videos.Do()
 
 	duration := resp.Items[0].ContentDetails.Duration
 	durationString := getDuration(duration, timeOffset)
-
-	var videoURLString string
-	if videoURL != nil {
-		if timeOffset != "" {
-			offset, _ := time.ParseDuration(timeOffset)
-			query := videoURL.Query()
-			query.Set("begin", fmt.Sprint(int64(offset/time.Millisecond)))
-			videoURL.RawQuery = query.Encode()
-		}
-		videoURLString = videoURL.String()
-	} else {
-		log.Println("Video URL not found")
-	}
 
 	guildID := SearchGuild(m.ChannelID)
 	member, _ := v.session.GuildMember(guildID, m.Author.ID)

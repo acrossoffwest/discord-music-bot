@@ -40,3 +40,6 @@ bin/*
 ignore/*
 musicbot
 MusicBot.db
+MusicBot.db.*
+bot.toml
+.idea

@@ -12,24 +12,24 @@ import (
 // HelpReporter
 func HelpReporter(m *discordgo.MessageCreate) {
 	log.Println("INFO:", m.Author.Username, "send 'help'")
-	help := "```go\n`Standard Commands List`\n```\n" +
-		"**`" + o.DiscordPrefix + "help`** or **`" + o.DiscordPrefix + "h`**  ->  show help commands.\n" +
-		"**`" + o.DiscordPrefix + "join`** or **`" + o.DiscordPrefix + "j`**  ->  the bot join in to voice channel.\n" +
-		"**`" + o.DiscordPrefix + "leave`** or **`" + o.DiscordPrefix + "l`**  ->  the bot leave the voice channel.\n" +
-		"**`" + o.DiscordPrefix + "play`**  ->  play and add a one song in the queue.\n" +
-		"**`" + o.DiscordPrefix + "radio`**  ->  play a URL radio.\n" +
-		"**`" + o.DiscordPrefix + "stop`**  ->  stop the player and remove the queue.\n" +
-		"**`" + o.DiscordPrefix + "skip`**  ->  skip the actual song and play the next song of the queue.\n" +
-		"**`" + o.DiscordPrefix + "pause`**  ->  pause the player.\n" +
-		"**`" + o.DiscordPrefix + "resume`**  ->  resume the player.\n" +
-		"**`" + o.DiscordPrefix + "time`**  ->  show the time remaining of song.\n" +
-		"**`" + o.DiscordPrefix + "queue list`**  ->  show the list of song in the queue.\n" +
-		"**`" + o.DiscordPrefix + "queue remove `**  ->  remove a song of queue indexed for a ***number***, an ***@User*** or the ***last*** song, i.e. ***" + o.DiscordPrefix + "queue remove 2***\n" +
-		"**`" + o.DiscordPrefix + "queue clean`**  ->  clean all queue.\n" +
-		"**`" + o.DiscordPrefix + "youtube`**  ->  search from youtube.\n\n" +
+	help := "```go\n`Сайн Байна! Дуулашан ботай захиралтанууд`\n```\n" +
+		"**`" + o.DiscordPrefix + "help`** or **`" + o.DiscordPrefix + "h`**  ->  Захиралтануудые харуулха.\n" +
+		"**`" + o.DiscordPrefix + "join`** or **`" + o.DiscordPrefix + "j`**  ->  Бот дугарха каналда орохо.\n" +
+		"**`" + o.DiscordPrefix + "leave`** or **`" + o.DiscordPrefix + "l`**  ->  Бот дугарха каналhаа гараха.\n" +
+		"**`" + o.DiscordPrefix + "play`**  ->  Дуу надаха тигэд одно дуу ээлжэндэ нэмэхэ.\n" +
+		"**`" + o.DiscordPrefix + "radio`**  ->  URL radio наадаха.\n" +
+		"**`" + o.DiscordPrefix + "stop`**  ->  Дуу байгаад ээлжэнеээ унтаргаха.\n" +
+		"**`" + o.DiscordPrefix + "skip`**  ->  Дуулажа байhан дууяа хаяд саашинь ээлжэн ябуулаха.\n" +
+		"**`" + o.DiscordPrefix + "pause`**  ->  Дуу байлагаха.\n" +
+		"**`" + o.DiscordPrefix + "resume`**  ->  Байлгаhан дууяа сашин ябуулаха.\n" +
+		"**`" + o.DiscordPrefix + "time`**  ->  Дуунай саг улоошин харуулаха.\n" +
+		"**`" + o.DiscordPrefix + "queue list`**  ->  Дуунудай ээлжэн харуулаха.\n" +
+		"**`" + o.DiscordPrefix + "queue remove `**  ->  Дуунай ээлжэнэнь тоогор: ***number*** хаягдаха, ***@User*** ба ***last*** song, i.e. ***" + o.DiscordPrefix + "queue remove 2***\n" +
+		"**`" + o.DiscordPrefix + "queue clean`**  ->  Ээлжэн дуhааха.\n" +
+		"**`" + o.DiscordPrefix + "youtube`**  ->  юутубсоо бэдэрхэ.\n\n" +
 		"```go\n`Owner Commands List`\n```\n" +
-		"**`" + o.DiscordPrefix + "ignore`**  ->  ignore commands of a channel.\n" +
-		"**`" + o.DiscordPrefix + "unignore`**  ->  unignore commands of a channel.\n"
+		"**`" + o.DiscordPrefix + "ignore`**  ->  ханалэй захиралтануудые тоон угый байха.\n" +
+		"**`" + o.DiscordPrefix + "unignore`**  ->  ханалэй захиралтануудые тоожэ эхилхэ.\n"
 
 	ChMessageSend(m.ChannelID, help)
 	//ChMessageSendEmbed(m.ChannelID, "Help", help)
@@ -40,12 +40,12 @@ func JoinReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *discordgo.Ses
 	log.Println("INFO:", m.Author.Username, "send 'join'")
 	voiceChannelID := SearchVoiceChannel(m.Author.ID)
 	if voiceChannelID == "" {
-		log.Println("ERROR: Voice channel id not found.")
-		ChMessageSend(m.ChannelID, "[**Music**] <@"+m.Author.ID+"> You need to join a voice channel!")
+		log.Println("ERROR: Дургарха ханалэй ID ологдобо угый.")
+		ChMessageSend(m.ChannelID, "[**Music**] <@"+m.Author.ID+"> Та дугарха ханалдо ороод байха оhотойд!")
 		return
 	}
 	if v != nil {
-		log.Println("INFO: Voice Instance already created.")
+		log.Println("INFO: Дугарха Инстанс урид хээтэй байна.")
 	} else {
 		guildID := SearchGuild(m.ChannelID)
 		// create new voice instance
@@ -83,7 +83,7 @@ func LeaveReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	mutex.Lock()
 	delete(voiceInstances, v.guildID)
 	mutex.Unlock()
-	dg.UpdateStatus(0, o.DiscordStatus)
+	dg.UpdateGameStatus(0, o.DiscordStatus)
 	ChMessageSend(m.ChannelID, "[**Music**] I left the voice channel!")
 }
 
@@ -157,7 +157,7 @@ func StopReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 		return
 	}
 	v.Stop()
-	dg.UpdateStatus(0, o.DiscordStatus)
+	dg.UpdateGameStatus(0, o.DiscordStatus)
 	log.Println("INFO: The bot stop play audio")
 	ChMessageSend(m.ChannelID, "[**Music**] I'm stoped now!")
 }
@@ -388,12 +388,12 @@ func StatusReporter(m *discordgo.MessageCreate) {
 	}
 	command := strings.SplitAfter(m.Content, "status")
 	status := strings.TrimSpace(command[1])
-	dg.UpdateStatus(0, status)
+	dg.UpdateGameStatus(0, status)
 	ChMessageSend(m.ChannelID, "[**Music**] Status: `"+status+"`")
 }
 
 // StatusCleanReporter
 func StatusCleanReporter(m *discordgo.MessageCreate) {
 	log.Println("INFO:", m.Author.Username, "send 'statusclean'")
-	dg.UpdateStatus(0, "")
+	dg.UpdateGameStatus(0, "")
 }
