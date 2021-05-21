@@ -1,4 +1,4 @@
-module discord-music-bot
+module github.com/acrossoffwest/discord-music-bot
 
 go 1.16
 

@@ -6,7 +6,6 @@ import (
 	"github.com/jonas747/dca"
 	"os/exec"
 	"sync"
-	//"gopkg.in/hraban/opus.v2"
 )
 
 type Options struct {
