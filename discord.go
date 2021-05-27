@@ -16,6 +16,8 @@ func DiscordConnect() (err error) {
 	}
 	log.Println("INFO: Bot is Opening")
 	dg.AddHandler(MessageCreateHandler)
+	dg.AddHandler(RoleReactionsAddedHandler)
+	dg.AddHandler(RoleReactionsRemovedHandler)
 	dg.AddHandler(GuildCreateHandler)
 	dg.AddHandler(GuildDeleteHandler)
 	dg.AddHandler(ConnectHandler)
@@ -111,6 +113,16 @@ func ChMessageSend(textChannelID, message string) {
 	}
 }
 
+func ChMessageSendWithoutPurge(textChannelID, message string) *discordgo.Message {
+	msg, err := dg.ChannelMessageSend(textChannelID, message)
+
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return msg
+}
+
 // msgToPurgeQueue
 func msgToPurgeQueue(m *discordgo.Message) {
 	if o.DiscordPurgeTime > 0 {
@@ -177,33 +189,7 @@ func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !strings.HasPrefix(m.Content, o.DiscordPrefix) {
 		return
 	}
-	/*
-	  // Method with memory (volatile)
-	  guildID := SearchGuild(m.ChannelID)
-	  v := voiceInstances[guildID]
-	  owner, _:= s.Guild(guildID)
-	  content := strings.Replace(m.Content, o.DiscordPrefix, "", 1)
-	  command := strings.Fields(content)
-	  if len(command) == 0 {
-	    return
-	  }
-	  if owner.OwnerID == m.Author.ID {
-	    if strings.HasPrefix(command[0], "ignore") {
-	      ignore[m.ChannelID] = true
-	      ChMessageSend(m.ChannelID, "[**Music**] `Ignoring` comands in this channel!")
-	    }
-	    if strings.HasPrefix(command[0], "unignore") {
-	      if ignore[m.ChannelID] == true {
-	        delete(ignore, m.ChannelID)
-	        ChMessageSend(m.ChannelID, "[**Music**] `Unignoring` comands in this channel!")
-	      }
-	    }
-	  }
-	  if ignore[m.ChannelID] == true {
-	    return
-	  }
-	*/
-	// Method with database (persistent)
+
 	guildID := SearchGuild(m.ChannelID)
 	v := voiceInstances[guildID]
 	owner, _ := s.Guild(guildID)
@@ -261,7 +247,63 @@ func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		SkipReporter(v, m)
 	case "youtube":
 		YoutubeReporter(v, m)
+	case "server-roles":
+		ShowRolesWithIdAndName(s, m)
+	case "roles-select-message":
+		AddMessageForSelectRoles(m)
 	default:
 		return
+	}
+}
+
+func getRolesMap() map[string]string {
+	return map[string]string{
+		"buryadtug":      "810822536035958794",
+		"buryattug":      "810822536035958794",
+		"orodtug":        "810822615307386900",
+		"halmagtug":      "810822659969384488",
+		"halhatug":       "810822696921071677",
+		"huzhaatug":      "822015031314743307",
+		"harigureneitug": "838136542353424434",
+	}
+}
+
+const roleSelectMessageID = "847564237165297665"
+
+func RoleReactionsAddedHandler(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+	if m.MessageID != roleSelectMessageID {
+		return
+	}
+	user, err := s.User(m.UserID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	guildID := SearchGuild(m.ChannelID)
+
+	if roleId, ok := getRolesMap()[m.Emoji.Name]; ok {
+		_ = s.GuildMemberRoleAdd(guildID, user.ID, roleId)
+		log.Println("add: ", roleId)
+	} else {
+		log.Println("role", m.Emoji.Name, "not found")
+	}
+}
+
+func RoleReactionsRemovedHandler(s *discordgo.Session, m *discordgo.MessageReactionRemove) {
+	if m.MessageID != roleSelectMessageID {
+		return
+	}
+	user, err := s.User(m.UserID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	guildID := SearchGuild(m.ChannelID)
+
+	if roleId, ok := getRolesMap()[m.Emoji.Name]; ok {
+		_ = s.GuildMemberRoleRemove(guildID, user.ID, roleId)
+		log.Println("removed: ", roleId)
+	} else {
+		log.Println("role", m.Emoji.Name, "not found")
 	}
 }

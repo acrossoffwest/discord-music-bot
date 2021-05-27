@@ -427,6 +427,23 @@ func YoutubeReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	ChMessageSendHold(m.ChannelID, "[**Music**] **`"+song.data.User+"`**, Youtube URL: https://www.youtube.com/watch?v="+song.data.VidID)
 }
 
+// ShowRolesWithIdAndName
+func ShowRolesWithIdAndName(s *discordgo.Session, m *discordgo.MessageCreate) {
+	guildID := SearchGuild(m.ChannelID)
+	roles, err := s.GuildRoles(guildID)
+	if err != nil {
+		return
+	}
+	result := ""
+	for _, role := range roles {
+		if role.Name == "@everyone" {
+			continue
+		}
+		result += fmt.Sprintf("%v -> %v\n", role.ID, role.Name)
+	}
+	ChMessageSendHold(m.ChannelID, result)
+}
+
 // Not used for now
 // StatusReporter
 func StatusReporter(m *discordgo.MessageCreate) {
@@ -445,4 +462,13 @@ func StatusReporter(m *discordgo.MessageCreate) {
 func StatusCleanReporter(m *discordgo.MessageCreate) {
 	log.Println("INFO:", m.Author.Username, "send 'statusclean'")
 	dg.UpdateGameStatus(0, "")
+}
+
+func AddMessageForSelectRoles(m *discordgo.MessageCreate) {
+	message := "Ролёо абхын тулоо эмодзи дарагты / For selecting your role click on an emoji / Для выбора роли выберите эмодзи: \nБуряад <:buryadtug:827123053799931934>\nХалха <:halhatug:847545621606563870>\nХальмаг <:halmagtug:847545511270547468>\nОрод <:orodtug:847558068283375647>\nХужаа <:huzhaatug:847558624711540756>"
+	msg := ChMessageSendWithoutPurge(m.ChannelID, message)
+	if msg == nil {
+		return
+	}
+	log.Println("Message ID:", msg.ID)
 }
