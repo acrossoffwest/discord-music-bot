@@ -119,7 +119,7 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		return
 	}
 
-	videoURLString, err := client.GetStreamURL(vid, vid.Formats.FindByItag(18))
+	videoURLString, err := client.GetStreamURL(vid, vid.Formats.FindByItag(251))
 	if err != nil {
 		log.Fatal(err)
 		return
