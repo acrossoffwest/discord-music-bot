@@ -1,7 +1,7 @@
-package main
+package services
 
 // QueueGetSong
-func (v *VoiceInstance) QueueGetSong() (song Song) {
+func (v *main.VoiceInstance) QueueGetSong() (song Song) {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	if len(v.queue) != 0 {
@@ -11,14 +11,14 @@ func (v *VoiceInstance) QueueGetSong() (song Song) {
 }
 
 // QueueAdd
-func (v *VoiceInstance) QueueAdd(song Song) {
+func (v *main.VoiceInstance) QueueAdd(song Song) {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	v.queue = append(v.queue, song)
 }
 
 // QueueRemoveFirst
-func (v *VoiceInstance) QueueRemoveFisrt() {
+func (v *main.VoiceInstance) QueueRemoveFisrt() {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	if len(v.queue) != 0 {
@@ -27,7 +27,7 @@ func (v *VoiceInstance) QueueRemoveFisrt() {
 }
 
 // QueueRemoveIndex
-func (v *VoiceInstance) QueueRemoveIndex(k int) {
+func (v *main.VoiceInstance) QueueRemoveIndex(k int) {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	if len(v.queue) != 0 && k <= len(v.queue) {
@@ -36,7 +36,7 @@ func (v *VoiceInstance) QueueRemoveIndex(k int) {
 }
 
 // QueueRemoveUser
-func (v *VoiceInstance) QueueRemoveUser(user string) {
+func (v *main.VoiceInstance) QueueRemoveUser(user string) {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	queue := v.queue
@@ -51,7 +51,7 @@ func (v *VoiceInstance) QueueRemoveUser(user string) {
 }
 
 // QueueRemoveLast
-func (v *VoiceInstance) QueueRemoveLast() {
+func (v *main.VoiceInstance) QueueRemoveLast() {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	if len(v.queue) != 0 {
@@ -60,7 +60,7 @@ func (v *VoiceInstance) QueueRemoveLast() {
 }
 
 // QueueClean
-func (v *VoiceInstance) QueueClean() {
+func (v *main.VoiceInstance) QueueClean() {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	// hold the actual song in the queue
@@ -68,7 +68,7 @@ func (v *VoiceInstance) QueueClean() {
 }
 
 // QueueRemove
-func (v *VoiceInstance) QueueRemove() {
+func (v *main.VoiceInstance) QueueRemove() {
 	v.queueMutex.Lock()
 	defer v.queueMutex.Unlock()
 	v.queue = []Song{}

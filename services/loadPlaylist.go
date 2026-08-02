@@ -1,7 +1,8 @@
-package main
+package services
 
 import (
 	"context"
+	"discord-music-bot"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"log"
@@ -42,7 +43,7 @@ func LoadPlaylist(rawUrl string) []YoutubeVideoInfo {
 
 func LoadPlaylistPage(playlistId string, nextPageToken string) YoutubeVideosListPageWrapper {
 	ctx := context.Background()
-	service, err := youtube.NewService(ctx, option.WithAPIKey(o.YoutubeToken))
+	service, err := youtube.NewService(ctx, option.WithAPIKey(main.o.YoutubeToken))
 	if err != nil {
 		log.Fatal("Error new service: ", err)
 	}

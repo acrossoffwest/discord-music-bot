@@ -1,7 +1,8 @@
-package main
+package services
 
 import (
 	"context"
+	"discord-music-bot"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	ytdl2 "github.com/kkdai/youtube/v2"
@@ -65,7 +66,7 @@ func getDuration(stringRawFull, stringRawOffset string) (stringRemain string) {
 
 func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCreate) (song_struct PkgSong, err error) { //(url, title, time string, err error)
 	ctx := context.Background()
-	service, err := youtube.NewService(ctx, option.WithAPIKey(o.YoutubeToken))
+	service, err := youtube.NewService(ctx, option.WithAPIKey(main.o.YoutubeToken))
 	if err != nil {
 		//log.Fatalf("Error creating new YouTube client: %v", err)
 		return

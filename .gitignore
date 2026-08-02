@@ -39,7 +39,7 @@
 bin/*
 ignore/*
 discord-music-bot
-discord-music-bot.db
+database/app/discord-music-bot.db
 discord-music-bot.db.*
-bot.toml
+configs/bot.toml
 .idea

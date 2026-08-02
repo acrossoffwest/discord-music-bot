@@ -1,13 +1,14 @@
-package main
+package configs
 
 import (
+	"discord-music-bot/services"
 	"errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"log"
 )
 
-var o = &Options{}
+var o = &services.Options{}
 
 // LoadConfig
 func LoadConfig(filename string) (err error) {

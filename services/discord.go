@@ -1,6 +1,7 @@
-package main
+package services
 
 import (
+	"discord-music-bot"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"strings"
@@ -9,25 +10,25 @@ import (
 
 // DiscordConnect make a new connection to Discord
 func DiscordConnect() (err error) {
-	dg, err = discordgo.New("Bot " + o.DiscordToken)
+	main.dg, err = discordgo.New("Bot " + main.o.DiscordToken)
 	if err != nil {
 		log.Println("FATA: error creating Discord session,", err)
 		return
 	}
 	log.Println("INFO: Bot is Opening")
-	dg.AddHandler(MessageCreateHandler)
-	dg.AddHandler(RoleReactionsAddedHandler)
-	dg.AddHandler(RoleReactionsRemovedHandler)
-	dg.AddHandler(GuildCreateHandler)
-	dg.AddHandler(GuildDeleteHandler)
-	dg.AddHandler(ConnectHandler)
+	main.dg.AddHandler(MessageCreateHandler)
+	main.dg.AddHandler(RoleReactionsAddedHandler)
+	main.dg.AddHandler(RoleReactionsRemovedHandler)
+	main.dg.AddHandler(GuildCreateHandler)
+	main.dg.AddHandler(GuildDeleteHandler)
+	main.dg.AddHandler(ConnectHandler)
 	// Open Websocket
-	err = dg.Open()
+	err = main.dg.Open()
 	if err != nil {
 		log.Println("FATA: Error Open():", err)
 		return
 	}
-	_, err = dg.User("@me")
+	_, err = main.dg.User("@me")
 	if err != nil {
 		// Login unsuccessful
 		log.Println("FATA:", err)
@@ -37,13 +38,13 @@ func DiscordConnect() (err error) {
 	log.Println("INFO: Bot is now running. Press CTRL-C to exit.")
 	purgeRoutine()
 	initRoutine()
-	dg.UpdateGameStatus(0, o.DiscordStatus)
+	main.dg.UpdateGameStatus(0, main.o.DiscordStatus)
 	return nil
 }
 
 // SearchVoiceChannel search the voice channel id into from guild.
 func SearchVoiceChannel(user string) (voiceChannelID string) {
-	for _, g := range dg.State.Guilds {
+	for _, g := range main.dg.State.Guilds {
 		for _, v := range g.VoiceStates {
 			if v.UserID == user {
 				return v.ChannelID
@@ -55,7 +56,7 @@ func SearchVoiceChannel(user string) (voiceChannelID string) {
 
 // SearchGuild search the guild ID
 func SearchGuild(textChannelID string) (guildID string) {
-	channel, _ := dg.Channel(textChannelID)
+	channel, _ := main.dg.Channel(textChannelID)
 	guildID = channel.GuildID
 	return
 }
@@ -78,7 +79,7 @@ func ChMessageSendEmbed(textChannelID, title, description string) {
 	embed.Description = description
 	embed.Color = 0xb20000
 	for i := 0; i < 10; i++ {
-		msg, err := dg.ChannelMessageSendEmbed(textChannelID, &embed)
+		msg, err := main.dg.ChannelMessageSendEmbed(textChannelID, &embed)
 		if err != nil {
 			time.Sleep(1 * time.Second)
 			continue
@@ -91,7 +92,7 @@ func ChMessageSendEmbed(textChannelID, title, description string) {
 // ChMessageSendHold send a message
 func ChMessageSendHold(textChannelID, message string) {
 	for i := 0; i < 10; i++ {
-		_, err := dg.ChannelMessageSend(textChannelID, message)
+		_, err := main.dg.ChannelMessageSend(textChannelID, message)
 		if err != nil {
 			time.Sleep(1 * time.Second)
 			continue
@@ -103,7 +104,7 @@ func ChMessageSendHold(textChannelID, message string) {
 // ChMessageSend send a message and auto-remove it in a time
 func ChMessageSend(textChannelID, message string) {
 	for i := 0; i < 10; i++ {
-		msg, err := dg.ChannelMessageSend(textChannelID, message)
+		msg, err := main.dg.ChannelMessageSend(textChannelID, message)
 		if err != nil {
 			time.Sleep(1 * time.Second)
 			continue
@@ -114,7 +115,7 @@ func ChMessageSend(textChannelID, message string) {
 }
 
 func ChMessageSendWithoutPurge(textChannelID, message string) *discordgo.Message {
-	msg, err := dg.ChannelMessageSend(textChannelID, message)
+	msg, err := main.dg.ChannelMessageSend(textChannelID, message)
 
 	if err != nil {
 		log.Println(err)
@@ -125,14 +126,14 @@ func ChMessageSendWithoutPurge(textChannelID, message string) *discordgo.Message
 
 // msgToPurgeQueue
 func msgToPurgeQueue(m *discordgo.Message) {
-	if o.DiscordPurgeTime > 0 {
+	if main.o.DiscordPurgeTime > 0 {
 		timestamp := time.Now().UTC().Unix()
 		message := PurgeMessage{
 			m.ID,
 			m.ChannelID,
 			timestamp,
 		}
-		purgeQueue = append(purgeQueue, message)
+		main.purgeQueue = append(main.purgeQueue, message)
 	}
 }
 
@@ -140,10 +141,10 @@ func msgToPurgeQueue(m *discordgo.Message) {
 func purgeRoutine() {
 	go func() {
 		for {
-			for k, v := range purgeQueue {
-				if time.Now().Unix()-o.DiscordPurgeTime > v.TimeSent {
-					purgeQueue = append(purgeQueue[:k], purgeQueue[k+1:]...)
-					dg.ChannelMessageDelete(v.ChannelID, v.ID)
+			for k, v := range main.purgeQueue {
+				if time.Now().Unix()-main.o.DiscordPurgeTime > v.TimeSent {
+					main.purgeQueue = append(main.purgeQueue[:k], main.purgeQueue[k+1:]...)
+					main.dg.ChannelMessageDelete(v.ChannelID, v.ID)
 					// Break at first match to avoid panic, timing isn't that important here
 					break
 				}
@@ -154,16 +155,16 @@ func purgeRoutine() {
 }
 
 func initRoutine() {
-	songSignal = make(chan PkgSong)
-	radioSignal = make(chan PkgRadio)
-	go GlobalPlay(songSignal)
-	go GlobalRadio(radioSignal)
+	main.songSignal = make(chan PkgSong)
+	main.radioSignal = make(chan PkgRadio)
+	go GlobalPlay(main.songSignal)
+	go GlobalRadio(main.radioSignal)
 }
 
 // ConnectHandler
 func ConnectHandler(s *discordgo.Session, connect *discordgo.Connect) {
 	log.Println("INFO: Connected!!")
-	s.UpdateGameStatus(0, o.DiscordStatus)
+	s.UpdateGameStatus(0, main.o.DiscordStatus)
 }
 
 // GuildCreateHandler
@@ -174,26 +175,26 @@ func GuildCreateHandler(s *discordgo.Session, guild *discordgo.GuildCreate) {
 // GuildDeleteHandler
 func GuildDeleteHandler(s *discordgo.Session, guild *discordgo.GuildDelete) {
 	log.Println("INFO: Guild Delete:", guild.ID)
-	v := voiceInstances[guild.ID]
+	v := main.voiceInstances[guild.ID]
 	if v != nil {
 		v.Stop()
 		time.Sleep(200 * time.Millisecond)
-		mutex.Lock()
-		delete(voiceInstances, guild.ID)
-		mutex.Unlock()
+		main.mutex.Lock()
+		delete(main.voiceInstances, guild.ID)
+		main.mutex.Unlock()
 	}
 }
 
 // MessageCreateHandler
 func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if !strings.HasPrefix(m.Content, o.DiscordPrefix) {
+	if !strings.HasPrefix(m.Content, main.o.DiscordPrefix) {
 		return
 	}
 
 	guildID := SearchGuild(m.ChannelID)
-	v := voiceInstances[guildID]
+	v := main.voiceInstances[guildID]
 	owner, _ := s.Guild(guildID)
-	content := strings.Replace(m.Content, o.DiscordPrefix, "", 1)
+	content := strings.Replace(m.Content, main.o.DiscordPrefix, "", 1)
 	command := strings.Fields(content)
 	if len(command) == 0 {
 		return

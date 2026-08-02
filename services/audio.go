@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"github.com/jonas747/dca"
@@ -6,45 +6,6 @@ import (
 	"log"
 	"time"
 )
-
-const (
-	channels   int = 2     // 1 for mono, 2 for stereo
-	frameRate  int = 48000 // audio sampling rate
-	frameSize  int = 960   // uint16 size of each audio frame 960/48KHz = 20ms
-	bufferSize int = 1024  // max size of opus data 1K
-)
-
-/*
-func (v *VoiceInstance) InitVoice() {
-  v.songSig = make(chan PkgSong)
-  v.radioSig = make(chan PkgRadio)
-  v.endSig = make(chan bool)
-  v.speaking = false
-  go v.Play(v.songSig, v.radioSig, v.endSig)
-}
-*/
-/*
-func (v *VoiceInstance) Play(songSig chan Song, radioSig chan string, endSig chan bool) {
-  for {
-    select {
-      case song := <-songSig:
-        if v.radioFlag {
-          v.Stop()
-          time.Sleep(200 * time.Millisecond)
-        }
-        go v.PlayQueue(song)
-      case radio := <-radioSig:
-        v.Stop()
-        time.Sleep(200 * time.Millisecond)
-        go v.Radio(radio)
-      case <-endSig:
-        v.Stop()
-        return
-        //time.Sleep(200 * time.Millisecond)
-    }
-  }
-}
-*/
 
 func GlobalPlay(songSig chan PkgSong) {
 	for {
@@ -70,7 +31,7 @@ func GlobalRadio(radioSig chan PkgRadio) {
 	}
 }
 
-func (v *VoiceInstance) PlayQueue(song Song) {
+func (v *main.VoiceInstance) PlayQueue(song main.Song) {
 	// add song to queue
 	v.QueueAdd(song)
 	if v.speaking {
@@ -82,7 +43,7 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 		defer v.audioMutex.Unlock()
 		for {
 			if len(v.queue) == 0 {
-				dg.UpdateGameStatus(0, o.DiscordStatus)
+				main.dg.UpdateGameStatus(0, main.o.DiscordStatus)
 				ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] End of queue!")
 				return
 			}
@@ -90,8 +51,8 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 			go ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] Playing, **`"+
 				v.nowPlaying.Title+"`  -  `("+v.nowPlaying.Duration+")`  -  **<@"+v.nowPlaying.ID+">\n") //*`"+ v.nowPlaying.User +"`***")
 			// If monoserver
-			if o.DiscordPlayStatus {
-				dg.UpdateGameStatus(0, v.nowPlaying.Title)
+			if main.o.DiscordPlayStatus {
+				main.dg.UpdateGameStatus(0, v.nowPlaying.Title)
 			}
 			v.stop = false
 			v.skip = false
@@ -113,11 +74,11 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 	}()
 }
 
-func (v *VoiceInstance) Radio(url string) {
+func (v *main.VoiceInstance) Radio(url string) {
 	v.audioMutex.Lock()
 	defer v.audioMutex.Unlock()
-	if o.DiscordPlayStatus {
-		dg.UpdateGameStatus(0, "Radio")
+	if main.o.DiscordPlayStatus {
+		main.dg.UpdateGameStatus(0, "Radio")
 	}
 	v.radioFlag = true
 	v.stop = false
@@ -127,7 +88,7 @@ func (v *VoiceInstance) Radio(url string) {
 
 	v.DCA(url)
 
-	dg.UpdateGameStatus(0, o.DiscordStatus)
+	main.dg.UpdateGameStatus(0, main.o.DiscordStatus)
 	v.radioFlag = false
 	v.stop = false
 	v.speaking = false
@@ -135,7 +96,7 @@ func (v *VoiceInstance) Radio(url string) {
 }
 
 // DCA
-func (v *VoiceInstance) DCA(url string) {
+func (v *main.VoiceInstance) DCA(url string) {
 	opts := dca.StdEncodeOptions
 	opts.RawOutput = true
 	opts.Bitrate = 128
@@ -163,14 +124,14 @@ func (v *VoiceInstance) DCA(url string) {
 }
 
 // Stop stop the audio
-func (v *VoiceInstance) Stop() {
+func (v *main.VoiceInstance) Stop() {
 	v.stop = true
 	if v.encoder != nil {
 		v.encoder.Cleanup()
 	}
 }
 
-func (v *VoiceInstance) Skip() bool {
+func (v *main.VoiceInstance) Skip() bool {
 	if v.speaking {
 		if v.pause {
 			return true
@@ -184,7 +145,7 @@ func (v *VoiceInstance) Skip() bool {
 }
 
 // Pause pause the audio
-func (v *VoiceInstance) Pause() {
+func (v *main.VoiceInstance) Pause() {
 	v.pause = true
 	if v.stream != nil {
 		v.stream.SetPaused(true)
@@ -192,7 +153,7 @@ func (v *VoiceInstance) Pause() {
 }
 
 // Resume resume the audio
-func (v *VoiceInstance) Resume() {
+func (v *main.VoiceInstance) Resume() {
 	v.pause = false
 	if v.stream != nil {
 		v.stream.SetPaused(false)
